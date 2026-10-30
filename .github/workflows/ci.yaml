@@ -16,11 +16,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Add wfc-summary.cjs from WFC
-        if: matrix.summaryScript == 'with'
-        run: |
-          curl -sSfL -o commons.jar https://repo1.maven.org/maven2/com/webfuzzing/commons/0.13.0/commons-0.13.0.jar
-          unzip -j commons.jar webreport/wfc-summary.cjs -d generated_tests
+      - name: Remove wfc-summary.cjs
+        if: matrix.summaryScript == 'without'
+        run: rm generated_tests/wfc-summary.cjs
 
       - name: Trying EvoMaster Action
         uses: ./  # Refers to this custom action

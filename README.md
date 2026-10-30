@@ -84,6 +84,6 @@ If there is any important feature you think it is missing, please let us know by
 ## For Developers
 
 To test this action, this repository itself is configured to use the action on itself (see [ci.yaml](.github/workflows/ci.yaml)). 
-_EvoMaster_ is run in `--help` mode (so there is no need to have any actual API to test), where an example [report.json](generated_tests/report.json) file is already added to the repository for testing. 
-The CI runs the action twice: once with `wfc-summary.cjs` taken from the [WFC](https://github.com/WebFuzzing/Commons) jar on Maven Central (rich summary), and once without it (fallback for older _EvoMaster_ versions).
+_EvoMaster_ is run in `--help` mode (so there is no need to have any actual API to test), where an example [report.json](generated_tests/report.json) file, together with the [wfc-summary.cjs](generated_tests/wfc-summary.cjs) script that _EvoMaster_ writes next to it, is already added to the repository for testing. 
+The CI runs the action twice: once with `wfc-summary.cjs` (rich summary), and once without it (fallback for older _EvoMaster_ versions).
 
