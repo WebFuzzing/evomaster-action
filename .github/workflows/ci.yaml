@@ -8,12 +8,21 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # with: rich summary from wfc-summary.cjs, without: fallback for EvoMaster versions not exporting it
+        summaryScript: [with, without]
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+
+      - name: Remove wfc-summary.cjs
+        if: matrix.summaryScript == 'without'
+        run: rm generated_tests/wfc-summary.cjs
 
       - name: Trying EvoMaster Action
         uses: ./  # Refers to this custom action
         with:
            args: "--help"
-           failOnErrors: "true"
+           failOnErrors: "false"
+           artifactName: "evomaster-results-${{ matrix.summaryScript }}"

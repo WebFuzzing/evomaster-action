@@ -26,13 +26,6 @@ Example of configuration:
          --showProgress false
      failOnErrors: "true"
 
-- name: Upload Generated Files
-  if: always()
-  uses: actions/upload-artifact@v4
-  with:
-    name: results
-    path: ./generated_tests
-
 - name: Stop Docker Compose
   if: always()
   run: docker compose down
@@ -40,24 +33,36 @@ Example of configuration:
 
 
 How you want to run _EvoMaster_ is CI is up to you, e.g., if on each commit, or only on specific branches, or only for PRs, etc. 
-Then, there are five steps.
+Then, there are four steps.
 
 1) Need to build your application. This will be programming language and framework dependent.
 
 2) The recommended way to start your application is with _Docker Compose_. This alo helps if you need to start databases (e.g., Postgres, MySQL and MongoDB). 
 
-3) Use `webfuzzing/evomaster-action@v1` to run _EvoMaster_. 
+3) Use `webfuzzing/evomaster-action@v1` to run _EvoMaster_. The action also uploads the generated tests and the interactive report as a workflow artifact, so you can download them as a zip file. 
 
-4) Upload the generated tests created by _EvoMaster_. This will enable you to download them as a zip file. 
-
-5) Shutdown the application using _Docker Compose_
+4) Shutdown the application using _Docker Compose_
 
 
-At the moment, this action has 2 options:
+This action has the following options:
 
 * __failOnErrors__: specify whether to fail the build if any fault was detected by _EvoMaster_.
 
 * __args__: command-line arguments given to _EvoMaster_. These are exactly the same you would use when running _EvoMaster_ on your local machine. 
+
+* __outputFolder__: folder where _EvoMaster_ writes its output. Default is `generated_tests`. If you use `--outputFolder` in `args`, set this option to the same value.
+
+* __uploadArtifact__: whether to upload the output folder as a workflow artifact. Default is `true`.
+
+* __artifactName__: name of the uploaded artifact. Default is `evomaster-results`.
+
+* __annotations__: whether to create annotations for the found fault categories. Default is `true`.
+
+* __prComment__: on pull requests, write a comment with a short summary of the results, and update it on each new run. Default is `false`. This needs `pull-requests: write` permission in your workflow. On PRs from forks, the token is read-only, and the comment is skipped with a warning.
+
+The job summary of the action shows an overview of the results, the found faults per category and endpoint, and the code of the generated tests.
+This requires a version of _EvoMaster_ that writes `wfc-summary.cjs` next to `report.json` (which is not done if `--writeWFCReportExcludeWebApp true` is used). 
+With older versions, only the number of found faults is reported.
 
 In this example, we used the arguments:
 
@@ -79,5 +84,6 @@ If there is any important feature you think it is missing, please let us know by
 ## For Developers
 
 To test this action, this repository itself is configured to use the action on itself (see [ci.yaml](.github/workflows/ci.yaml)). 
-_EvoMaster_ is run in `--help` mode (so there is no need to have any actual API to test), where an example [report.json](generated_tests/report.json) file is already added to the repository for testing. 
+_EvoMaster_ is run in `--help` mode (so there is no need to have any actual API to test), where an example [report.json](generated_tests/report.json) file, together with the [wfc-summary.cjs](generated_tests/wfc-summary.cjs) script that _EvoMaster_ writes next to it, is already added to the repository for testing. 
+The CI runs the action twice: once with `wfc-summary.cjs` (rich summary), and once without it (fallback for older _EvoMaster_ versions).
 
