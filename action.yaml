@@ -7,6 +7,26 @@ inputs:
   failOnErrors:
     description: "Fail the action if any issue was found in the System Under Test"
     required: true
+  outputFolder:
+    description: "Folder where EvoMaster writes its output. Must match '--outputFolder' if this is given in 'args'."
+    required: false
+    default: "generated_tests"
+  uploadArtifact:
+    description: "Upload the output folder (generated tests and interactive report) as a workflow artifact"
+    required: false
+    default: "true"
+  artifactName:
+    description: "Name of the uploaded artifact"
+    required: false
+    default: "evomaster-results"
+  annotations:
+    description: "Create annotations for the found fault categories"
+    required: false
+    default: "true"
+  prComment:
+    description: "On pull requests, write (and keep updated) a comment with a short summary. Needs 'pull-requests: write' permission."
+    required: false
+    default: "false"
 
 
 runs:
@@ -28,6 +48,14 @@ runs:
       run: java -jar evomaster.jar ${{ inputs.args }}
       shell: bash
 
+    - name: Upload EvoMaster Results
+      id: upload
+      if: inputs.uploadArtifact == 'true'
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.artifactName }}
+        path: ${{ inputs.outputFolder }}
+
     - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
@@ -38,5 +66,9 @@ runs:
       shell: bash
       env:
         GITHUB_ACTION_PATH: ${{ github.action_path }}
+        GITHUB_TOKEN: ${{ github.token }}
         FAIL_ON_ERRORS: ${{inputs.failOnErrors}}
-
+        OUTPUT_FOLDER: ${{ inputs.outputFolder }}
+        ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
+        ANNOTATIONS: ${{ inputs.annotations }}
+        PR_COMMENT: ${{ inputs.prComment }}
